@@ -83,5 +83,5 @@
         msg: "{{ load_products_data }}"
     
     - name: Load products 
-      ansible.builtin.command: mongosh --host mongodb.rameshaws.site </app/db/master-data.js
-      when: load_products_data.stdout != '0'  
+      ansible.builtin.shell: mongosh --host mongodb.rameshaws.site < /app/db/master-data.js
+      when: load_products_data.stdout | int < 0  
