@@ -64,4 +64,24 @@
       failed_when: "'Active: active (running)' not in catalogue_status.stdout"
       changed_when: false
     
+    - name: copy mongodb repo
+      ansible.builtin.copy:
+        src: mongodb.repo
+        dest: /etc/yum.repos.d/mongodb.repo
+    
+    - name: Install mongodb client
+      ansible.builtin.dnf:
+        name: mongodb-mongosh
+        state: present
 
+    - name: Ensure mongodb client is installed
+      ansible.builtin.command: mongosh --version
+      register: mongodb_client_status
+      failed_when: "'mongosh' not in mongodb_client_status.stdout"
+      changed_when: false
+
+    - name: load the products data into mongodb
+      ansible.builtin.command: mongosh --host mongodb.rameshaws.site --eval 'db.getMongo().getDBNames().indexOf("catalogue")
+      register: load_products_data
+      failed_when: "'Successfully imported' not in load_products_data.stdout"
+      changed_when: false
