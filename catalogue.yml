@@ -74,10 +74,14 @@
         name: mongodb-mongosh
         state: present
 
-    - name: load the products data into mongodb
+    - name: check if products data is loaded
       ansible.builtin.command: mongosh --host mongodb.rameshaws.site --eval 'db.getMongo().getDBNames().indexOf("catalogue")'
       register: load_products_data
 
     - name: print products data load status
       ansible.builtin.debug:
         msg: "{{ load_products_data }}"
+    
+    - name: Load products 
+      ansible.builtin.command: mongosh --host mongodb.rameshaws.site </app/db/master-data.js
+      when: load_products_data.stdout != '0'  
