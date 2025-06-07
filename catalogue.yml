@@ -81,7 +81,7 @@
       changed_when: false
 
     - name: load the products data into mongodb
-      ansible.builtin.command: mongosh --host mongodb.rameshaws.site --eval 'db.getMongo().getDBNames().indexOf("catalogue")
+      ansible.builtin.command: mongosh --host mongodb.rameshaws.site --eval 'db.getMongo().getDBNames().indexOf("catalogue")'
       register: load_products_data
       failed_when: "'Successfully imported' not in load_products_data.stdout"
       changed_when: false
