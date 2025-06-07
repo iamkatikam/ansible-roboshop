@@ -51,4 +51,9 @@
       ansible.builtin.copy:
         src: nginx.conf
         dest: /etc/nginx/nginx.conf
+
+    - name: Restart nginx to apply new configuration
+      ansible.builtin.service:
+        name: nginx
+        state: restarted
     
