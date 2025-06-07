@@ -74,12 +74,6 @@
         name: mongodb-mongosh
         state: present
 
-    - name: Ensure mongodb client is installed
-      ansible.builtin.command: mongosh --version
-      register: mongodb_client_status
-      failed_when: "'mongosh' not in mongodb_client_status.stdout"
-      changed_when: false
-
     - name: load the products data into mongodb
       ansible.builtin.command: mongosh --host mongodb.rameshaws.site --eval 'db.getMongo().getDBNames().indexOf("catalogue")'
       register: load_products_data
