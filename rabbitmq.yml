@@ -8,8 +8,8 @@
       ansible.builtin.copy:
         src: rabbitmq.repo
         dest: /etc/yum.repos.d/rabbitmq.repo
-        remote_src: yes
-        
+        #remote_src: yes
+      
     - name: Install RabbitMQ
       ansible.builtin.dnf:
         name: rabbitmq-server
