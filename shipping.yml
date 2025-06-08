@@ -1,0 +1,96 @@
+---
+  - name: Configure Shipping component
+    hosts: shipping
+    become: yes
+
+    tasks:
+    - name: Install maven
+      ansible.builtin.dnf:
+        name: maven
+        state: present
+
+    - name: Install pymyskl Python package and cryptography
+      ansible.builtin.pip:
+        name: "{{ item }}"
+        executable: /usr/bin/pip3.9
+      loop:
+        - pymysql
+        - cryptography
+    
+    - name: Create roboshop system user for shipping
+      ansible.builtin.user:
+        name: roboshop
+        shell: /bin/bash
+        system: yes
+        home: /app
+
+    - name: Create app directory
+      ansible.builtin.file:
+        name: /app
+        state: directory
+
+    - name: Download shipping source code
+      ansible.builtin.get_url:
+        url: https://roboshop-artifacts.s3.amazonaws.com/shipping-v3.zip
+        dest: /tmp/shipping.zip
+
+    - name: Unzip shipping source code
+      ansible.builtin.unarchive:
+        src: /tmp/shipping.zip
+        dest: /app
+        remote_src: yes
+
+    - name: Install maven dependencies
+      ansible.builtin.command:
+        cmd: mvn clean package
+        chdir: /app
+
+    - name: Rename shipping service file
+      ansible.builtin.command: mv target/shipping-1.0.jar shipping.jar 
+      args:
+        chdir: /app
+
+    - name: Copy shipping service file
+      ansible.builtin.copy:
+        src: shipping.service
+        dest: /etc/systemd/system/shipping.service
+        mode: '0644'
+    
+    - name: Reload systemd to recognize new service
+      ansible.builtin.systemd:  
+        daemon_reload: yes
+
+    - name: Start and enable shipping service
+      ansible.builtin.service:
+        name: shipping
+        state: started
+        enabled: yes
+
+    - name: Install mysql client
+      ansible.builtin.dnf:
+        name: mysql
+        state: present
+  
+    # - name: connect to mysql using app user
+    #   community.mysql.mysql_info:
+    #     login_user: root
+    #     login_password: RoboShop@1
+    #     login_host: mysql.rameshaws.site
+  
+    - name: Import shipping schema
+      community.mysql.mysql_db:
+        login_user: root
+        login_password: RoboShop@1
+        login_host: mysql.rameshaws.site
+        state: import
+        name: all
+        target: "{{ item }}"
+      loop:
+      - /app/db/schema.sql
+      - /app/db/app-user.sql
+      - /app/db/master-data.sql
+
+    - name: Retsrat shipping service
+      ansible.builtin.service:
+        name: shipping
+        state: restarted
